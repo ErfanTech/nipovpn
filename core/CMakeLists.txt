@@ -29,12 +29,23 @@ set(CORE_TARGET_SOURCES
 
 add_executable(${CORE_TARGET} src/main.cpp ${CORE_TARGET_SOURCES})
 
-# Add directories
-target_include_directories(${CORE_TARGET} PUBLIC ${Boost_INCLUDE_DIRS})
-target_include_directories(${CORE_TARGET} PUBLIC  ${YAML_CPP_INCLUDE_DIR})
-target_include_directories(${CORE_TARGET} PUBLIC  ${OPENSSL_INCLUDE_DIR})
+if(TARGET Boost::regex)
+        target_link_libraries(${CORE_TARGET} PRIVATE Boost::regex Boost::system)
+else()
+        target_include_directories(${CORE_TARGET} PUBLIC ${Boost_INCLUDE_DIRS})
+        target_link_libraries(${CORE_TARGET} ${Boost_LIBRARIES})
+endif()
 
-# linking dependencies
-target_link_libraries(${CORE_TARGET} ${Boost_LIBRARIES})
-target_link_libraries(${CORE_TARGET} ${YAML_CPP_LIBRARIES})
-target_link_libraries(${CORE_TARGET} ${OPENSSL_LIBRARIES})
+if(TARGET yaml-cpp::yaml-cpp)
+        target_link_libraries(${CORE_TARGET} PRIVATE yaml-cpp::yaml-cpp)
+else()
+        target_include_directories(${CORE_TARGET} PUBLIC ${YAML_CPP_INCLUDE_DIR})
+        target_link_libraries(${CORE_TARGET} ${YAML_CPP_LIBRARIES})
+endif()
+
+if(TARGET OpenSSL::SSL)
+        target_link_libraries(${CORE_TARGET} PRIVATE OpenSSL::SSL OpenSSL::Crypto)
+else()
+        target_include_directories(${CORE_TARGET} PUBLIC ${OPENSSL_INCLUDE_DIR})
+        target_link_libraries(${CORE_TARGET} ${OPENSSL_LIBRARIES})
+endif()

@@ -1,5 +1,7 @@
 #include "log.hpp"
 
+#include <filesystem>
+
 Log::Log(const std::shared_ptr<Config> &config)
     : config_(config), level_(Level::INFO) {
 
@@ -7,6 +9,16 @@ Log::Log(const std::shared_ptr<Config> &config)
         mode_ = std::string("SERVER");
     else if (config_->runMode() == RunMode::agent)
         mode_ = std::string("AGENT");
+
+    try {
+        const std::filesystem::path logPath(config_->log().file);
+        if (logPath.has_parent_path()) {
+            std::filesystem::create_directories(logPath.parent_path());
+        }
+    } catch (const std::exception &e) {
+        std::cerr << "Error creating log directory for: " << config_->log().file
+                  << ". " << e.what() << "\n";
+    }
 
     std::ofstream logFile(config_->log().file, std::ios::out | std::ios::app);
     if (!logFile.is_open()) {
@@ -37,6 +49,16 @@ void Log::write(const std::string &message, Level level) const {
     std::lock_guard<std::mutex> lock(logMutex_);
 
     if (level <= level_ || level == Level::ERROR) {
+
+        try {
+            const std::filesystem::path logPath(config_->log().file);
+            if (logPath.has_parent_path()) {
+                std::filesystem::create_directories(logPath.parent_path());
+            }
+        } catch (const std::exception &e) {
+            std::cerr << "Error creating log directory for: " << config_->log().file
+                      << ". " << e.what() << "\n";
+        }
 
         std::ofstream logFile(config_->log().file, std::ios::out | std::ios::app);
 

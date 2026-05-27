@@ -1,0 +1,48 @@
+---
+# Windows-friendly defaults for running from an extracted ZIP artifact.
+# Paths are relative so the program can run without admin privileges.
+
+general:
+  token: "af445adb-2434-4975-9445-2c1b2231"
+  fakeUrl: "nipo.ciron.net"
+  methods:
+    - HEAD
+    - GET
+    - POST
+    - PUT
+    - DELETE
+  endPoints:
+    - api
+    - login
+    - user
+    - update
+  timeout: 10
+  tunnelEnable: false
+  connectionReuse: false
+
+log:
+  logLevel: "DEBUG"
+  logFile: "nipovpn.log"
+
+server:
+  threads: 8
+  listenIp: "0.0.0.0"
+  # Avoid privileged ports on Windows; change if needed.
+  listenPort: 8080
+  tlsEnable: false
+  tlsVerifyPeer: false
+  tlsCertFile: ""
+  tlsKeyFile: ""
+  tlsCaFile: ""
+
+agent:
+  threads: 8
+  listenIp: "0.0.0.0"
+  listenPort: 8081
+  serverIp: "127.0.0.1"
+  serverPort: 8080
+  httpVersion: "1.1"
+  userAgent: "NipoAgent"
+  tlsEnable: false
+  tlsVerifyPeer: false
+  tlsCaFile: ""

@@ -1,0 +1,75 @@
+name: Build Windows Artifact
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'core/src/**'
+      - 'core/CMakeLists.txt'
+      - 'CMakeLists.txt'
+      - 'vcpkg.json'
+      - '.github/workflows/windows.yml'
+  pull_request:
+    paths:
+      - 'core/src/**'
+      - 'core/CMakeLists.txt'
+      - 'CMakeLists.txt'
+      - 'vcpkg.json'
+      - '.github/workflows/windows.yml'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      VCPKG_DEFAULT_TRIPLET: x64-windows
+      VCPKG_FEATURE_FLAGS: manifests
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Set up vcpkg (manifest mode)
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgJsonGlob: 'vcpkg.json'
+
+      - name: Configure (Release)
+        shell: pwsh
+        run: |
+          cmake -S . -B build -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" `
+            -DVCPKG_TARGET_TRIPLET=x64-windows
+
+      - name: Build
+        shell: pwsh
+        run: |
+          cmake --build build --config Release
+
+      - name: Package runnable ZIP
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+
+          # Main executable
+          Copy-Item build/core/nipovpn.exe dist/nipovpn.exe
+
+          # Windows-friendly config (relative paths)
+          Copy-Item nipovpn/etc/nipovpn/config.windows.yaml dist/config.yaml
+
+          # Copy runtime DLLs needed by vcpkg-provided dependencies (if any)
+          Copy-Item "$env:VCPKG_ROOT\installed\x64-windows\bin\*.dll" dist\ -ErrorAction SilentlyContinue
+
+          Compress-Archive -Path dist\* -DestinationPath nipovpn-windows-x64.zip -Force
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nipovpn-windows-x64
+          path: nipovpn-windows-x64.zip

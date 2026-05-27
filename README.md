@@ -36,6 +36,22 @@ To contribute take a look at [contribution page](https://github.com/MortezaBashs
 
 Build from source for [Linux](guides/BuildLinux.md)
 
+### Windows (MSVC)
+
+Windows builds are produced by GitHub Actions and uploaded as a downloadable artifact.
+
+#### Run from artifact
+
+- Download the `nipovpn-windows-x64` artifact from the latest workflow run.
+- Extract the ZIP.
+- Run:
+
+```powershell
+./nipovpn.exe server ./config.yaml
+```
+
+The Windows artifact uses a Windows-friendly config file (relative paths) based on `nipovpn/etc/nipovpn/config.windows.yaml`.
+
 
 
 ## Run

@@ -1,0 +1,10 @@
+{
+  "name": "nipovpn",
+  "version-string": "0.0.0",
+  "dependencies": [
+    "boost-regex",
+    "boost-system",
+    "openssl",
+    "yaml-cpp"
+  ]
+}

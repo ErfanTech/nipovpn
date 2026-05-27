@@ -4,14 +4,20 @@ project(nipovpn)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Set the compilation flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -ggdb")
-
-# Set the preprocessor flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -MMD -MP")
+if(MSVC)
+	add_compile_options(/W4 /permissive- /EHsc)
+	add_compile_definitions(NOMINMAX WIN32_LEAN_AND_MEAN _CRT_SECURE_NO_WARNINGS)
+else()
+	add_compile_options(-Wall -Wextra)
+	add_compile_options($<$<CONFIG:Debug>:-g>)
+	add_compile_options($<$<CONFIG:RelWithDebInfo>:-g>)
+	add_compile_options($<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:GNU>>:-ggdb>)
+	add_compile_options($<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-MMD>)
+	add_compile_options($<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-MP>)
+endif()
 
 # https://cmake.org/cmake/help/latest/module/FindBoost.html
-find_package(Boost REQUIRED COMPONENTS regex OPTIONAL_COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS regex system)
 
 # /usr/local/lib/cmake/yaml-cpp/yaml-cpp-config.cmake
 # declared variables: YAML_CPP_INCLUDE_DIR & YAML_CPP_LIBRARY_DIR
